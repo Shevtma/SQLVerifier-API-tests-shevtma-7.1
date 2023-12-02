@@ -142,6 +142,13 @@
 							"    pm.expect(pm.response.to.have.header(\"Content-Type\", \"application/json\"))",
 							"});",
 							"",
+							"let moment = require(\"moment\");",
+							"let ResponceDateTime = moment(pm.response.headers.get(\"Date\"));",
+							"",
+							"pm.test(\"Check for the response datetime to be \" + pm.environment.get('CurrDateTime'), function () {",
+							"    pm.expect(ResponceDateTime.format(\"DD.MM.YYYY hh:mm Z\")).to.eql(pm.environment.get('CurrDateTime'));",
+							"});",
+							"",
 							"pm.environment.set(\"task_id\", jsonBody.id)"
 						],
 						"type": "text/javascript"
@@ -154,7 +161,9 @@
 						"exec": [
 							"pm.environment.set(\"task_text\", pm.variables.replaceIn(\"{{$randomLoremSentence}}\"));",
 							"pm.environment.set(\"task_answer\", pm.variables.replaceIn(\"{{$randomLoremSentence}}\"));",
-							"pm.environment.set(\"task_title\", pm.variables.replaceIn(\"{{$randomLoremWord}}\"));"
+							"pm.environment.set(\"task_title\", pm.variables.replaceIn(\"{{$randomLoremWord}}\"));",
+							"let moment = require(\"moment\");",
+							"pm.environment.set(\"CurrDateTime\", pm.variables.replaceIn(moment().format(\"DD.MM.YYYY hh:mm Z\")))"
 						],
 						"type": "text/javascript"
 					}
@@ -230,7 +239,23 @@
 							"    let taskId_arr = jsonBody.map((task) => {return task.id});",
 							"    pm.expect(taskId_arr.includes(pm.environment.get('task_id'))).to.be.true",
 							"});",
-							""
+							"",
+							"let moment = require(\"moment\");",
+							"let ResponceDateTime = moment(pm.response.headers.get(\"Date\"));",
+							"pm.test(\"Check for the response datetime to be \" + pm.environment.get('CurrDateTime'), function () {",
+							"    pm.expect(ResponceDateTime.format(\"DD.MM.YYYY hh:mm Z\")).to.eql(pm.environment.get('CurrDateTime'));",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "9dc97e57-9632-4426-a0a2-54449471d6b8",
+						"exec": [
+							"let moment = require(\"moment\");",
+							"pm.environment.set(\"CurrDateTime\", pm.variables.replaceIn(moment().format(\"DD.MM.YYYY hh:mm Z\")))"
 						],
 						"type": "text/javascript"
 					}
@@ -282,7 +307,9 @@
 					"script": {
 						"id": "bcac9dbe-ed5e-49d4-924c-85552829c29d",
 						"exec": [
-							"pm.environment.set(\"new_task_text\", pm.variables.replaceIn(\"{{$randomLoremSentence}}\"));"
+							"pm.environment.set(\"new_task_text\", pm.variables.replaceIn(\"{{$randomLoremSentence}}\"));",
+							"let moment = require(\"moment\");",
+							"pm.environment.set(\"CurrDateTime\", pm.variables.replaceIn(moment().format(\"DD.MM.YYYY hh:mm Z\")))"
 						],
 						"type": "text/javascript"
 					}
@@ -312,6 +339,12 @@
 							"",
 							"pm.test(\"Content-Type header matches \\\"application/json\\\"\", function () {",
 							"    pm.expect(pm.response.to.have.header(\"Content-Type\", \"application/json\"))",
+							"});",
+							"",
+							"let moment = require(\"moment\");",
+							"let ResponceDateTime = moment(pm.response.headers.get(\"Date\"));",
+							"pm.test(\"Check for the response datetime to be \" + pm.environment.get('CurrDateTime'), function () {",
+							"    pm.expect(ResponceDateTime.format(\"DD.MM.YYYY hh:mm Z\")).to.eql(pm.environment.get('CurrDateTime'));",
 							"});"
 						],
 						"type": "text/javascript"
@@ -397,6 +430,12 @@
 							"    pm.expect(pm.response.to.have.header(\"Content-Type\", \"application/json\"))",
 							"});",
 							"",
+							"let moment = require(\"moment\");",
+							"let ResponceDateTime = moment(pm.response.headers.get(\"Date\"));",
+							"pm.test(\"Check for the response datetime to be \" + pm.environment.get('CurrDateTime'), function () {",
+							"    pm.expect(ResponceDateTime.format(\"DD.MM.YYYY hh:mm Z\")).to.eql(pm.environment.get('CurrDateTime'));",
+							"});",
+							"",
 							"pm.sendRequest(",
 							"    {url: pm.environment.get(\"baseUrl\")+'/tasks/'+pm.environment.get(\"task_id\"),",
 							"    method: 'DELETE',",
@@ -405,6 +444,17 @@
 							"    'accept': '*/*'}",
 							"    });",
 							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "c0a60628-fb32-436e-9aa0-663cfd81e215",
+						"exec": [
+							"let moment = require(\"moment\");",
+							"pm.environment.set(\"CurrDateTime\", pm.variables.replaceIn(moment().format(\"DD.MM.YYYY hh:mm Z\")))"
 						],
 						"type": "text/javascript"
 					}
