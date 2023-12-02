@@ -106,20 +106,57 @@
 				{
 					"listen": "test",
 					"script": {
+						"id": "0f172d7b-f671-44b2-98b6-5ff0e7676945",
 						"exec": [
-							"let jsonData = pm.response.json();",
+							"let jsonBody = pm.response.json();",
 							"",
-							"",
-							"pm.test(\"Your test name\", function () {",
-							"    pm.expect(jsonData.text).to.eql(\"some text\");",
+							"pm.test(\"Status code is 201\", function () {",
+							"    pm.response.to.have.status(201);",
 							"});",
 							"",
-							"pm.environment.set(\"task_id\", jsonData.id)",
+							"pm.test(\"Status code name is \\\"Created\\\" \", function () {",
+							"    pm.response.to.have.status(\"Created\");",
+							"});",
 							"",
-							""
+							"pm.test(\"Check for the task text to be \" + pm.environment.get('task_text'), function () {",
+							"    pm.expect(jsonBody.text).to.eql(pm.environment.get('task_text'));",
+							"});",
+							"",
+							"pm.test(\"Check for the task answer to be \" + pm.environment.get('task_answer'), function () {",
+							"    pm.expect(jsonBody.answer).to.eql(pm.environment.get('task_answer'));",
+							"});",
+							"",
+							"pm.test(\"Check for the task title to be \" + pm.environment.get('task_title'), function () {",
+							"    pm.expect(jsonBody.title).to.eql(pm.environment.get('task_title'));",
+							"});",
+							"",
+							"pm.test(\"Response body structure has field \\\"id\\\" of type \\\"number\\\"\", function () {",
+							"    pm.expect(jsonBody.id).to.be.a(\"number\");",
+							"});",
+							"",
+							"pm.test(\"Accept header matches \\\"*/*\\\"\", function () {",
+							"    pm.expect(pm.response.to.have.header(\"Accept\", \"*/*\"))",
+							"});",
+							"",
+							"pm.test(\"Content-Type header matches \\\"application/json\\\"\", function () {",
+							"    pm.expect(pm.response.to.have.header(\"Content-Type\", \"application/json\"))",
+							"});",
+							"",
+							"pm.environment.set(\"task_id\", jsonBody.id)"
 						],
-						"type": "text/javascript",
-						"id": "0f172d7b-f671-44b2-98b6-5ff0e7676945"
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "5310b96f-c775-4de0-bb50-a7282fb595ca",
+						"exec": [
+							"pm.environment.set(\"task_text\", pm.variables.replaceIn(\"{{$randomLoremSentence}}\"));",
+							"pm.environment.set(\"task_answer\", pm.variables.replaceIn(\"{{$randomLoremSentence}}\"));",
+							"pm.environment.set(\"task_title\", pm.variables.replaceIn(\"{{$randomLoremWord}}\"));"
+						],
+						"type": "text/javascript"
 					}
 				}
 			],
@@ -145,7 +182,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n  \"text\": \"some text\",\n  \"answer\": \"string\",\n  \"title\": \"string\"\n}"
+					"raw": "{\n  \"text\": \"{{task_text}}\",\n  \"answer\": \"{{task_answer}}\",\n  \"title\": \"{{task_title}}\"\n}"
 				},
 				"url": {
 					"raw": "{{baseUrl}}/tasks",
@@ -161,6 +198,44 @@
 		},
 		{
 			"name": "get tasks list",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "213206d9-069e-4a6d-913a-3b097a9cb65d",
+						"exec": [
+							"let jsonBody = JSON.parse(responseBody);",
+							"",
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Status code name is \\\"OK\\\" \", function () {",
+							"    pm.response.to.have.status(\"OK\");",
+							"});",
+							"",
+							"pm.test(\"Accept header matches \\\"*/*\\\"\", function () {",
+							"    pm.expect(pm.response.to.have.header(\"Accept\", \"*/*\"))",
+							"});",
+							"",
+							"pm.test(\"Content-Type header matches \\\"application/json\\\"\", function () {",
+							"    pm.expect(pm.response.to.have.header(\"Content-Type\", \"application/json\"))",
+							"});",
+							"",
+							"pm.test(\"We have a massive of tasks in response\", function () {",
+							"    pm.expect(jsonBody.length).not.equals(0);",
+							"});",
+							"",
+							"pm.test(\"We have a block in response with task_id = \"+ pm.environment.get('task_id'), function () {",
+							"    let taskId_arr = jsonBody.map((task) => {return task.id});",
+							"    pm.expect(taskId_arr.includes(pm.environment.get('task_id'))).to.be.true",
+							"});",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
 			"id": "a8768edb-0ccb-4c3b-b344-95c3b32d7d9b",
 			"protocolProfileBehavior": {
 				"disableBodyPruning": true
@@ -178,7 +253,7 @@
 					}
 				],
 				"url": {
-					"raw": "{{baseUrl}}/tasks?page=0&size=100",
+					"raw": "{{baseUrl}}/tasks?page=0&size=200",
 					"host": [
 						"{{baseUrl}}"
 					],
@@ -192,7 +267,7 @@
 						},
 						{
 							"key": "size",
-							"value": "100"
+							"value": "200"
 						}
 					]
 				}
@@ -201,6 +276,48 @@
 		},
 		{
 			"name": "change task text",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "bcac9dbe-ed5e-49d4-924c-85552829c29d",
+						"exec": [
+							"pm.environment.set(\"new_task_text\", pm.variables.replaceIn(\"{{$randomLoremSentence}}\"));"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"id": "f4134202-3a30-4de4-af7f-4e27befa1b7d",
+						"exec": [
+							"let jsonBody = pm.response.json();",
+							"",
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Status code name is \\\"OK\\\" \", function () {",
+							"    pm.response.to.have.status(\"OK\");",
+							"});",
+							"",
+							"pm.test(\"Check for the new task text to be \" + pm.environment.get('new_task_text'), function () {",
+							"    pm.expect(jsonBody.text).to.eql(pm.environment.get('new_task_text'));",
+							"});",
+							"",
+							"pm.test(\"Accept header matches \\\"*/*\\\"\", function () {",
+							"    pm.expect(pm.response.to.have.header(\"Accept\", \"*/*\"))",
+							"});",
+							"",
+							"pm.test(\"Content-Type header matches \\\"application/json\\\"\", function () {",
+							"    pm.expect(pm.response.to.have.header(\"Content-Type\", \"application/json\"))",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
 			"id": "c409a9e5-6973-47d5-9533-a09063b384a9",
 			"protocolProfileBehavior": {
 				"disableBodyPruning": true
@@ -223,7 +340,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n  \"id\": {{task_id}},\n  \"text\": \"some new new text\"\n}"
+					"raw": "{\n  \"id\": {{task_id}},\n  \"text\": \"{{new_task_text}}\"\n}"
 				},
 				"url": {
 					"raw": "{{baseUrl}}/tasks/{{task_id}}",
@@ -244,21 +361,52 @@
 				{
 					"listen": "test",
 					"script": {
+						"id": "07b9d85d-58c6-4328-8a04-340942dc5a57",
 						"exec": [
+							"let jsonBody = JSON.parse(responseBody);",
+							"",
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Status code name is \\\"OK\\\" \", function () {",
+							"    pm.response.to.have.status(\"OK\");",
+							"});",
+							"",
+							"pm.test(\"Check for the task text to be \" + pm.environment.get('new_task_text'), function () {",
+							"    pm.expect(jsonBody.text).to.eql(pm.environment.get('new_task_text'));",
+							"});",
+							"",
+							"pm.test(\"Check for the task answer to be \" + pm.environment.get('task_answer'), function () {",
+							"    pm.expect(jsonBody.answer).to.eql(pm.environment.get('task_answer'));",
+							"});",
+							"",
+							"pm.test(\"Check for the task title to be \" + pm.environment.get('task_title'), function () {",
+							"    pm.expect(jsonBody.title).to.eql(pm.environment.get('task_title'));",
+							"});",
+							"",
+							"pm.test(\"Response body structure has field \\\"id\\\" of type \\\"number\\\"\", function () {",
+							"    pm.expect(jsonBody.id).to.be.a(\"number\");",
+							"});",
+							"",
+							"pm.test(\"Accept header matches \\\"*/*\\\"\", function () {",
+							"    pm.expect(pm.response.to.have.header(\"Accept\", \"*/*\"))",
+							"});",
+							"",
+							"pm.test(\"Content-Type header matches \\\"application/json\\\"\", function () {",
+							"    pm.expect(pm.response.to.have.header(\"Content-Type\", \"application/json\"))",
+							"});",
+							"",
 							"pm.sendRequest(",
-							"    {url: 'https://sqlverifier-50d286d70656.herokuapp.com/api/tasks/3070',",
+							"    {url: pm.environment.get(\"baseUrl\")+'/tasks/'+pm.environment.get(\"task_id\"),",
 							"    method: 'DELETE',",
 							"    header:",
 							"    {'Authorization': 'Bearer ' + pm.environment.get('token'),",
 							"    'accept': '*/*'}",
-							"    }",
-							"    , function (err, response) {",
-							"    console.log(response);",
-							"});",
+							"    });",
 							""
 						],
-						"type": "text/javascript",
-						"id": "07b9d85d-58c6-4328-8a04-340942dc5a57"
+						"type": "text/javascript"
 					}
 				}
 			],
