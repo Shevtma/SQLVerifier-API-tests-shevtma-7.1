@@ -366,7 +366,14 @@
 							"    {'Authorization': 'Bearer ' + pm.environment.get('token'),",
 							"    'accept': '*/*'}",
 							"    });",
-							""
+							"",
+							"pm.environment.unset(\"token\");",
+							"pm.environment.unset(\"task_id\");",
+							"pm.environment.unset(\"task_text\");",
+							"pm.environment.unset(\"task_answer\");",
+							"pm.environment.unset(\"task_title\");",
+							"pm.environment.unset(\"new_task_text\");",
+							"pm.environment.unset(\"CurrDateTime\");"
 						],
 						"type": "text/javascript"
 					}
